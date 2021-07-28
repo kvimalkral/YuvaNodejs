@@ -1,16 +1,16 @@
-const { urlencoded } = require("express");
 const express = require("express");
-const mongoose = require("mongoose");
-const cluster = require('cluster');
-const os = require('os');
-var cors = require('cors')
 const app = express();
+const mongoose = require("mongoose");
+const {myCluster} = require("./lib/cluster");
+var cors = require('cors');
+require("dotenv").config();
+
 app.use(cors());
 
-// app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({ extended: true }));
 app.use(express.json())
 mongoose
-  .connect("mongodb://localhost:27017/test", {
+  .connect(process.env.DB_HOSt_URL, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
   })
@@ -88,16 +88,7 @@ app.delete("/users/:userName", (req,res) => {
     })
 })
 
-if(cluster.isMaster){
-  console.log(os.cpus().length);
-  for(let i=0; i<= os.cpus().length; i++){
-         cluster.fork()
-  }
-}else{
-  app.listen(4000, () => {
-    console.log(`app listing to port ${process.pid} 4000`);
-  });
-}
+myCluster(app)
 
 
 
