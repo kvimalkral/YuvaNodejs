@@ -1,6 +1,8 @@
 const { urlencoded } = require("express");
 const express = require("express");
 const mongoose = require("mongoose");
+const cluster = require('cluster');
+const os = require('os');
 var cors = require('cors')
 const app = express();
 app.use(cors());
@@ -42,6 +44,7 @@ app.post("/users", (req, res) => {
 app.get("/users", (req, res) => {
     customer.find({}).
     then((success) => {
+      console.log(process.pid);
         res.json(success);
     })
     .catch( (error) => {
@@ -85,8 +88,17 @@ app.delete("/users/:userName", (req,res) => {
     })
 })
 
+if(cluster.isMaster){
+  console.log(os.cpus().length);
+  for(let i=0; i<= os.cpus().length; i++){
+         cluster.fork()
+  }
+}else{
+  app.listen(4000, () => {
+    console.log(`app listing to port ${process.pid} 4000`);
+  });
+}
 
 
-app.listen(4000, () => {
-  console.log("app listing to port 4000");
-});
+
+
